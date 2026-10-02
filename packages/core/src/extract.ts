@@ -1327,8 +1327,8 @@ export function createDefuddleFetch(
           console.error = (...args: unknown[]) => {
             suppressedErrors.push(args);
           };
+          const extractionDocument = parseLinkedomHTML(rawBody, finalUrl);
           try {
-            const extractionDocument = parseLinkedomHTML(rawBody, finalUrl);
             const extracted = await dependencies.defuddle(
               extractionDocument,
               finalUrl,
@@ -1351,7 +1351,7 @@ export function createDefuddleFetch(
             ),
           );
           const hasJsDisabledShell = isTwitterJsDisabledPage(
-            parseLinkedomHTML(rawBody, finalUrl),
+            extractionDocument,
             opts.url,
           );
           // Only return 404 when a signal fires AND defuddle found no content

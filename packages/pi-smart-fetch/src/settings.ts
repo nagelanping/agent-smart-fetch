@@ -189,12 +189,10 @@ export async function loadPiSmartFetchSettings(
   cwd: string,
   agentDir = getAgentDir(),
 ): Promise<ResolvedPiSmartFetchSettings> {
-  const globalSettings = await readSettingsFile(
-    join(agentDir, "settings.json"),
-  );
-  const projectSettings = await readSettingsFile(
-    join(cwd, ".pi", "settings.json"),
-  );
+  const [globalSettings, projectSettings] = await Promise.all([
+    readSettingsFile(join(agentDir, "settings.json")),
+    readSettingsFile(join(cwd, ".pi", "settings.json")),
+  ]);
 
   return resolvePiSmartFetchSettings(globalSettings, projectSettings);
 }
