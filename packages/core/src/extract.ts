@@ -23,7 +23,7 @@ import {
   DEFAULT_RAW_ACCEPT_HEADER,
   DEFAULT_TIMEOUT_MS,
 } from "./constants";
-import { runtimeDependencies } from "./dependencies";
+import { loadRuntimeDependencies } from "./dependencies";
 import { parseLinkedomHTML } from "./dom";
 import {
   estimateWordCount,
@@ -1124,13 +1124,15 @@ function shouldStripReplies(site: string): boolean {
   );
 }
 
-export function getLatestChromeProfile(): string {
-  return getLatestChromeProfileFrom(runtimeDependencies.getProfiles);
+export async function getLatestChromeProfile(): Promise<string> {
+  const { getProfiles } = await loadRuntimeDependencies();
+  return getLatestChromeProfileFrom(getProfiles);
 }
 
-export function createDefuddleFetch(
-  dependencies: FetchDependencies = runtimeDependencies,
-) {
+export function createDefuddleFetch(dependencies?: FetchDependencies) {
+  const dependenciesPromise = dependencies
+    ? Promise.resolve(dependencies)
+    : loadRuntimeDependencies();
   async function fetchWithClientRedirects(
     opts: FetchOptions,
     hooks: FetchExecutionHooks,
@@ -1138,6 +1140,7 @@ export function createDefuddleFetch(
     alternateLinkFallbackCount: number,
   ): Promise<FetchResult | FetchError> {
     const browser = opts.browser ?? DEFAULT_BROWSER;
+    const deps = await dependenciesPromise;
     const os = opts.os ?? DEFAULT_OS;
     const format: OutputFormat = opts.format ?? "markdown";
     const maxChars = opts.maxChars ?? DEFAULT_MAX_CHARS;
@@ -1227,7 +1230,7 @@ export function createDefuddleFetch(
         }
       };
       fetchOptions.captureDiagnostics = true;
-      const response = await dependencies.fetch(opts.url, fetchOptions);
+      const response = await deps.fetch(opts.url, fetchOptions);
 
       errorContext.finalUrl = response.url ?? opts.url;
       errorContext.statusCode = response.status;
@@ -1327,9 +1330,9 @@ export function createDefuddleFetch(
           console.error = (...args: unknown[]) => {
             suppressedErrors.push(args);
           };
-          const extractionDocument = parseLinkedomHTML(rawBody, finalUrl);
+          const extractionDocument = await parseLinkedomHTML(rawBody, finalUrl);
           try {
-            const extracted = await dependencies.defuddle(
+            const extracted = await deps.defuddle(
               extractionDocument,
               finalUrl,
               {
@@ -1407,7 +1410,7 @@ export function createDefuddleFetch(
         if (!jsonResponse) {
           if (HTML_CONTENT_TYPES.some((value) => contentType.includes(value))) {
             const alternateLinks = extractQualifiedAlternateLinks(
-              parseLinkedomHTML(rawBody, finalUrl),
+              await parseLinkedomHTML(rawBody, finalUrl),
               finalUrl,
               format,
             );
@@ -1518,8 +1521,8 @@ export function createDefuddleFetch(
         progress: 0.96,
         phase: "extracting",
       });
-      const fallbackDocument = parseLinkedomHTML(rawBody, finalUrl);
-      const extractionDocument = parseLinkedomHTML(rawBody, finalUrl);
+      const fallbackDocument = await parseLinkedomHTML(rawBody, finalUrl);
+      const extractionDocument = await parseLinkedomHTML(rawBody, finalUrl);
       const alternateLinks = extractQualifiedAlternateLinks(
         fallbackDocument,
         finalUrl,
@@ -1542,7 +1545,7 @@ export function createDefuddleFetch(
         );
       };
 
-      let extracted: Awaited<ReturnType<typeof dependencies.defuddle>>;
+      let extracted: Awaited<ReturnType<typeof deps.defuddle>>;
       const suppressedErrors: unknown[][] = [];
       try {
         // Defuddle's async extractors (e.g. X oEmbed) can throw on 404 and
@@ -1554,7 +1557,7 @@ export function createDefuddleFetch(
           suppressedErrors.push(args);
         };
         try {
-          extracted = await dependencies.defuddle(
+          extracted = await deps.defuddle(
             extractionDocument,
             finalUrl,
             {
@@ -1570,7 +1573,7 @@ export function createDefuddleFetch(
         extracted = {
           content: undefined,
           wordCount: 0,
-        } as Awaited<ReturnType<typeof dependencies.defuddle>>;
+        } as Awaited<ReturnType<typeof deps.defuddle>>;
       }
 
       // Detect X/Twitter deleted/protected tweets using two signals:

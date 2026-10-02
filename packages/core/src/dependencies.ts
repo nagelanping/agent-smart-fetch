@@ -1,9 +1,15 @@
-import { Defuddle } from "defuddle/node";
-import { getProfiles, fetch as wreqFetch } from "wreq-js";
 import type { FetchDependencies } from "./types";
 
-export const runtimeDependencies: FetchDependencies = {
-  fetch: wreqFetch,
-  defuddle: Defuddle,
-  getProfiles,
-};
+let dependenciesPromise: Promise<FetchDependencies> | undefined;
+
+export function loadRuntimeDependencies(): Promise<FetchDependencies> {
+  dependenciesPromise ??= Promise.all([
+    import("defuddle/node"),
+    import("wreq-js"),
+  ]).then(([{ Defuddle }, { fetch, getProfiles }]) => ({
+    fetch,
+    defuddle: Defuddle,
+    getProfiles,
+  }));
+  return dependenciesPromise;
+}

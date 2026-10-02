@@ -1,7 +1,7 @@
-import { parseHTML } from "linkedom";
 
 /** Apply linkedom polyfills that Defuddle expects (getComputedStyle, styleSheets). */
-export function parseLinkedomHTML(html: string, url?: string): Document {
+export async function parseLinkedomHTML(html: string, url?: string): Promise<Document> {
+  const { parseHTML } = await import("linkedom");
   const { document } = parseHTML(html);
   const doc = document as Document & Record<string, unknown>;
   const defaultView = doc.defaultView as

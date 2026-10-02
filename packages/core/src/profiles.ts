@@ -1,9 +1,8 @@
-import { getProfiles } from "wreq-js";
 import { DEFAULT_BROWSER } from "./constants";
 
 /** Get the latest Chrome profile available in wreq-js. */
 export function getLatestChromeProfile(
-  listProfiles: () => string[] = getProfiles,
+  listProfiles: () => string[],
 ): string {
   const chromes = listProfiles()
     .filter((profile) => profile.startsWith("chrome_"))

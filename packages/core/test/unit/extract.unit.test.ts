@@ -1327,8 +1327,8 @@ describe("createDefuddleFetch", () => {
 });
 
 describe("getLatestChromeProfile", () => {
-  it("returns the highest available chrome profile", () => {
-    const profile = getLatestChromeProfile();
+  it("returns the highest available chrome profile", async () => {
+    const profile = await getLatestChromeProfile();
     expect(profile).toMatch(/^chrome_\d+$/);
   });
 });

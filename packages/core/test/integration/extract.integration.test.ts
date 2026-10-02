@@ -29,8 +29,8 @@ const TEST_URLS = {
 };
 
 describeIf("integration: extraction pipeline", () => {
-  it("discovers a recent chrome profile", () => {
-    const profile = getLatestChromeProfile();
+  it("discovers a recent chrome profile", async () => {
+    const profile = await getLatestChromeProfile();
     expect(profile).toMatch(/^chrome_\d+$/);
   });
 

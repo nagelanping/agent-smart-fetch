@@ -6,10 +6,14 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { Container, Markdown, Spacer, Text } from "@earendil-works/pi-tui";
 import { Type } from "@sinclair/typebox";
+import type {
+  BatchFetchItemProgress,
+  BatchFetchProgressSnapshot,
+  BatchFetchResult,
+  FetchResult,
+  OutputFormat,
+} from "smart-fetch-core";
 import {
-  type BatchFetchItemProgress,
-  type BatchFetchProgressSnapshot,
-  type BatchFetchResult,
   buildBatchFetchResponseText,
   buildFetchErrorResponseText,
   buildFetchResponseText,
@@ -18,10 +22,8 @@ import {
   createBatchFetchToolParameterProperties,
   executeBatchFetchToolCall,
   executeFetchToolCall,
-  type FetchResult,
   isError,
   isFileFetchResult,
-  type OutputFormat,
   resolveFetchToolDefaults,
 } from "smart-fetch-core";
 import { loadPiSmartFetchSettings } from "./settings";
